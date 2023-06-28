@@ -1,6 +1,6 @@
 import numpy as np
 
-from core import Variable, Function
+from pydiablo.core import Variable, Function
 
 
 class Square(Function):

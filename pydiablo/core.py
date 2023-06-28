@@ -1,5 +1,5 @@
 import numpy as np
-from utils import as_array
+from pydiablo.utils import as_array
 
 
 class Variable:
