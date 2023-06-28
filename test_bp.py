@@ -1,18 +1,12 @@
 import numpy as np
 
-from functions import Square, Exp
+from functions import square, exp
 from core import Variable, Function
 
-A = Square()
-B = Exp()
-C = Square()
-
 x = Variable(np.array(0.5))
-a = A(x)
-b = B(a)
-y = C(b)
+# x = Variable(0.1) raise type error
+y = square(exp(square(x)))
 print(y.data)
 
-y.grad = np.array(1.0)
 y.backward()
 print(x.grad)

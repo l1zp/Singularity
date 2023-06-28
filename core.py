@@ -1,5 +1,12 @@
+import numpy as np
+from utils import as_array
+
+
 class Variable:
     def __init__(self, data) -> None:
+        if data is not None:
+            if not isinstance(data, np.ndarray):
+                raise TypeError(f"{type(data)} is not supported!")
         self.data = data
         self.grad = None
         self.creator = None
@@ -8,6 +15,9 @@ class Variable:
         self.creator = func
 
     def backward(self):
+        if self.grad is None:
+            self.grad = np.ones_like(self.data)
+
         # y = creator(x)
         funcs = [self.creator]
         while funcs:
@@ -24,7 +34,7 @@ class Function:
     def __call__(self, input) -> Variable:
         x = input.data
         y = self.forward(x)
-        output = Variable(y)
+        output = Variable(as_array(y))
         output.set_creator(self)
         self.input = input
         self.output = output
