@@ -9,13 +9,15 @@ class Variable:
 
     def backward(self):
         # y = creator(x)
-        f = self.creator
-        if f is not None:
-            x = f.input
-            # dx = df(x)*gy
-            x.grad = f.backward(self.grad)
+        funcs = [self.creator]
+        while funcs:
+            f = funcs.pop()
+            x, y = f.input, f.output
+            # dx = df(x)*dy
+            x.grad = f.backward(f.grad)
             # do the next grad
-            x.backward()
+            if x.creator is not None:
+                funcs.append(x.creator)
 
 
 class Function:
@@ -24,12 +26,12 @@ class Function:
         y = self.forward(x)
         output = Variable(y)
         output.set_creator(self)
-        self.input = input 
+        self.input = input
         self.output = output
         return output
-    
+
     def forward(self, x):
         raise NotImplementedError()
-    
+
     def backward(self, gy):
         raise NotImplementedError
