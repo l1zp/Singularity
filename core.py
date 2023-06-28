@@ -14,7 +14,7 @@ class Variable:
             f = funcs.pop()
             x, y = f.input, f.output
             # dx = df(x)*dy
-            x.grad = f.backward(f.grad)
+            x.grad = f.backward(y.grad)
             # do the next grad
             if x.creator is not None:
                 funcs.append(x.creator)
