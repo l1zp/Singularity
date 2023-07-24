@@ -10,9 +10,11 @@ class Variable:
         self.data = data
         self.grad = None
         self.creator = None
+        self.generation = 0
 
     def set_creator(self, func):
         self.creator = func
+        self.generation = self.creator.generation + 1
 
     def cleargrad(self):
         self.grad = None
@@ -22,7 +24,18 @@ class Variable:
             self.grad = np.ones_like(self.data)
 
         # y = creator(x)
-        funcs = [self.creator]
+        funcs = []
+        seen_set = set()
+
+        def add_func(f):
+            if f not in seen_set:
+                funcs.append(f)
+                seen_set.add(f)
+                # TODO: using heapq instead
+                funcs.sort(key=lambda x: x.generation)
+
+        add_func(self.creator)
+
         while funcs:
             f = funcs.pop()
             gys = [output.grad for output in f.outputs]
@@ -37,7 +50,7 @@ class Variable:
                 else:
                     x.grad += gx
                 if x.creator is not None:
-                    funcs.append(x.creator)
+                    add_func(x.creator)
 
 
 class Function:
@@ -47,6 +60,7 @@ class Function:
         if not isinstance(ys, tuple):
             ys = (ys,)
         outputs = [Variable(as_array(y)) for y in ys]
+        self.generation = max([x.generation for x in inputs])
 
         for output in outputs:
             output.set_creator(self)
