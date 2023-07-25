@@ -1,7 +1,22 @@
 import numpy as np
 import weakref
+import contextlib
 from pydiablo.utils import as_array
 
+class Config:
+    enable_backprop = True
+
+@contextlib.contextmanager
+def using_config(name, value):
+    old_value = getattr(Config, name)
+    setattr(Config, name, value)
+    try:
+        yield
+    finally:
+        setattr(Config, name, old_value)
+
+def no_grad():
+    return using_config("enable_backprop", False)
 
 class Variable:
     def __init__(self, data) -> None:
@@ -52,7 +67,7 @@ class Variable:
                     x.grad += gx
                 if x.creator is not None:
                     add_func(x.creator)
-            
+
             if not retain_grad:
                 for y in f.outputs:
                     y().grad = None
@@ -65,12 +80,14 @@ class Function:
         if not isinstance(ys, tuple):
             ys = (ys,)
         outputs = [Variable(as_array(y)) for y in ys]
-        self.generation = max([x.generation for x in inputs])
 
-        for output in outputs:
-            output.set_creator(self)
-        self.inputs = inputs
-        self.outputs = [weakref.ref(output) for output in outputs]
+        if Config.enable_backprop:
+            self.generation = max([x.generation for x in inputs])
+
+            for output in outputs:
+                output.set_creator(self)
+            self.inputs = inputs
+            self.outputs = [weakref.ref(output) for output in outputs]
         return outputs if len(outputs) > 1 else outputs[0]
 
     def forward(self, x):
