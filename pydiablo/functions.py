@@ -1,6 +1,6 @@
 import numpy as np
 
-from pydiablo.core import Variable, Function
+from pydiablo.core import Function
 
 
 class Square(Function):
@@ -20,12 +20,6 @@ class Exp(Function):
         x = self.input.data
         return np.exp(x) * gy
 
-class Add(Function):
-    def forward(self, x0, x1):
-        y = x0 + x1
-        return y
-    def backward(self, gy):
-        return gy, gy
 
 def square(x):
     return Square()(x)
@@ -33,6 +27,3 @@ def square(x):
 
 def exp(x):
     return Exp()(x)
-
-def add(x0, x1):
-    return Add()(x0, x1)
