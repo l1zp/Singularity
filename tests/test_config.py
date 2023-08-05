@@ -2,7 +2,7 @@ import numpy as np
 import unittest
 
 from pydiablo.core import Variable, no_grad
-from pydiablo.functions import add, square
+from pydiablo.functions import square
 
 
 class AddTest(unittest.TestCase):
@@ -10,4 +10,3 @@ class AddTest(unittest.TestCase):
         with no_grad():
             x = Variable(np.array(2.0))
             y = square(x)
-

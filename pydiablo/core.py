@@ -3,8 +3,10 @@ import weakref
 import contextlib
 from pydiablo.utils import as_array
 
+
 class Config:
     enable_backprop = True
+
 
 @contextlib.contextmanager
 def using_config(name, value):
@@ -15,15 +17,18 @@ def using_config(name, value):
     finally:
         setattr(Config, name, old_value)
 
+
 def no_grad():
     return using_config("enable_backprop", False)
 
+
 class Variable:
-    def __init__(self, data) -> None:
+    def __init__(self, data, name=None) -> None:
         if data is not None:
             if not isinstance(data, np.ndarray):
                 raise TypeError(f"{type(data)} is not supported!")
         self.data = data
+        self.name = name
         self.grad = None
         self.creator = None
         self.generation = 0
@@ -72,6 +77,34 @@ class Variable:
                 for y in f.outputs:
                     y().grad = None
 
+    @property
+    def shape(self):
+        return self.data.shape
+
+    @property
+    def ndim(self):
+        return self.data.ndim
+
+    @property
+    def size(self):
+        return self.data.size
+
+    @property
+    def dtype(self):
+        return self.data.dtype
+
+    def __len__(self):
+        return len(self.data)
+
+    def __repr__(self):
+        if self.data is None:
+            return "variable(None)"
+        p = str(self.data).replace("\n", "\n" + " " * 9)
+        return "variable(" + p + ")"
+
+    def __mul__(self, other):
+        return mul(self, other)
+
 
 class Function:
     def __call__(self, *inputs) -> Variable:
@@ -95,3 +128,33 @@ class Function:
 
     def backward(self, gy):
         raise NotImplementedError
+
+
+class Add(Function):
+    def forward(self, x0, x1):
+        y = x0 + x1
+        return y
+
+    def backward(self, gy):
+        return gy, gy
+
+
+class Mul(Function):
+    def forward(self, x0, x1):
+        return x0 * x1
+
+    def backward(self, gy):
+        x0, x1 = self.inputs[0].data, self.inputs[1].data
+        return gy * x1, gy * x0
+
+
+def add(x0, x1):
+    return Add()(x0, x1)
+
+
+def mul(x0, x1):
+    return Mul()(x0, x1)
+
+
+Variable.__mul__ = mul
+Variable.__add__ = add
