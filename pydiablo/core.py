@@ -26,6 +26,7 @@ def as_variable(obj):
         return obj
     return Variable(obj)
 
+
 def as_array(x):
     if np.isscalar(x):
         return np.array(x)
@@ -33,6 +34,8 @@ def as_array(x):
 
 
 class Variable:
+    __array_priority__ = 200
+
     def __init__(self, data, name=None) -> None:
         if data is not None:
             if not isinstance(data, np.ndarray):
@@ -160,6 +163,19 @@ class Mul(Function):
         return gy * x1, gy * x0
 
 
+class Neg(Function):
+    def forward(self, x):
+        return -x
+
+    def backward(self, gy):
+        return -gy
+
+def Sub(Function):
+    def forward(self, x0, x1):
+        return x0 - x1
+    def backward(self, gy)
+        return gy, -gy
+
 def add(x0, x1):
     x1 = as_array(x1)
     return Add()(x0, x1)
@@ -169,8 +185,17 @@ def mul(x0, x1):
     x1 = as_array(x1)
     return Mul()(x0, x1)
 
+def neg(x):
+    return Neg()(x)
+
+def sub(x0, x1):
+    x1 = as_array(x1)
+    return Sub()(x0, x1)
+
 
 Variable.__mul__ = mul
 Variable.__add__ = add
 Variable.__rmul__ = mul
 Variable.__radd__ = add
+Variable.__neg__ = neg
+Variable.__sub__ = sub
