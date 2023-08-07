@@ -1,7 +1,7 @@
 import numpy as np
 import unittest
 
-from pydiablo.core import Variable
+from pydiablo import Variable
 from pydiablo.functions import square
 
 

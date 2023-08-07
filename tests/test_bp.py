@@ -1,8 +1,8 @@
 import numpy as np
 import unittest
 
-from pydiablo.core import Function, Variable
-from pydiablo.functions import square, exp
+from pydiablo import Function, Variable
+from pydiablo.functions import square
 
 
 def numerical_diff(f, x, eps=1e-4):
