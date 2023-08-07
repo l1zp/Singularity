@@ -6,9 +6,9 @@ from pydiablo.core import Variable
 
 class AddTest(unittest.TestCase):
     def test_forward(self):
-        a = Variable(np.array(3.0))
+        a = np.array(3.0)
         b = Variable(np.array(2.0))
-        c = Variable(np.array(1.0))
+        c = np.array(1.0)
         y = a * b + c
         expected = np.array(7.0)
         self.assertEqual(y.data, expected)

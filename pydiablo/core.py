@@ -1,7 +1,6 @@
 import numpy as np
 import weakref
 import contextlib
-from pydiablo.utils import as_array
 
 
 class Config:
@@ -22,7 +21,21 @@ def no_grad():
     return using_config("enable_backprop", False)
 
 
+def as_variable(obj):
+    if isinstance(obj, Variable):
+        return obj
+    return Variable(obj)
+
+
+def as_array(x):
+    if np.isscalar(x):
+        return np.array(x)
+    return x
+
+
 class Variable:
+    __array_priority__ = 200
+
     def __init__(self, data, name=None) -> None:
         if data is not None:
             if not isinstance(data, np.ndarray):
@@ -108,6 +121,8 @@ class Variable:
 
 class Function:
     def __call__(self, *inputs) -> Variable:
+        inputs = [as_variable(input) for input in inputs]
+
         xs = [x.data for x in inputs]
         ys = self.forward(*xs)
         if not isinstance(ys, tuple):
@@ -148,13 +163,85 @@ class Mul(Function):
         return gy * x1, gy * x0
 
 
+class Neg(Function):
+    def forward(self, x):
+        return -x
+
+    def backward(self, gy):
+        return -gy
+
+
+class Sub(Function):
+    def forward(self, x0, x1):
+        return x0 - x1
+
+    def backward(self, gy):
+        return gy, -gy
+
+class Pow(Function):
+    def __init__(self, c) :
+        self.c = c
+
+    def forward(self, x):
+        return x ** self.c
+    
+    def backward(self, gy):
+        x = self.inputs[0].data
+        return self.c * x ** (self.c - 1) * gy
+
+class Div(Function):
+    def forward(self, x0, x1):
+        return x0 / x1
+
+    def backward(self, gy):
+        x0, x1 = self.inputs[0].data, self.inputs[1].data
+        return gy / x0, gy * (-x0 / x1**2)
+
+
 def add(x0, x1):
+    x1 = as_array(x1)
     return Add()(x0, x1)
 
 
 def mul(x0, x1):
+    x1 = as_array(x1)
     return Mul()(x0, x1)
+
+
+def neg(x):
+    return Neg()(x)
+
+
+def sub(x0, x1):
+    x1 = as_array(x1)
+    return Sub()(x0, x1)
+
+
+def rsub(x0, x1):
+    x1 = as_array(x1)
+    return Sub()(x1, x0)
+
+
+def div(x0, x1):
+    x1 = as_array(x1)
+    return Div()(x0, x1)
+
+
+def rdiv(x0, x1):
+    x1 = as_array(x1)
+    return Div()(x1, x0)
+
+def pow(x, c):
+    return Pow(c)(x)
 
 
 Variable.__mul__ = mul
 Variable.__add__ = add
+Variable.__rmul__ = mul
+Variable.__radd__ = add
+Variable.__neg__ = neg
+Variable.__sub__ = sub
+Variable.__rsub__ = rsub
+Variable.__truediv__ = div
+Variable.__rtruediv__ = rdiv
+Variable.__pow__ = pow
