@@ -25,8 +25,8 @@ class SphereTest(unittest.TestCase):
         z.backward()
         expected_x = np.array(6.0)
         expected_y = np.array(8.0)
-        self.assertEqual(self.x.grad, expected_x)
-        self.assertEqual(self.y.grad, expected_y)
+        self.assertEqual(self.x.grad.data, expected_x)
+        self.assertEqual(self.y.grad.data, expected_y)
 
 
 class MatyasTest(unittest.TestCase):
@@ -49,8 +49,8 @@ class MatyasTest(unittest.TestCase):
         z.backward()
         expected_x = np.array(0.040000000000000036)
         expected_y = np.array(0.040000000000000036)
-        self.assertEqual(self.x.grad, expected_x)
-        self.assertEqual(self.y.grad, expected_y)
+        self.assertEqual(self.x.grad.data, expected_x)
+        self.assertEqual(self.y.grad.data, expected_y)
 
 
 class GPTest(unittest.TestCase):
@@ -83,8 +83,8 @@ class GPTest(unittest.TestCase):
         z.backward()
         expected_x = np.array(-5376.0)
         expected_y = np.array(8064.0)
-        self.assertEqual(self.x.grad, expected_x)
-        self.assertEqual(self.y.grad, expected_y)
+        self.assertEqual(self.x.grad.data, expected_x)
+        self.assertEqual(self.y.grad.data, expected_y)
 
     def test_graph_plot(self):
         z = self.goldstein(self.x, self.y)
