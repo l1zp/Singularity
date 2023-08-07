@@ -1,6 +1,7 @@
 import numpy as np
 import weakref
 import contextlib
+import pydiablo
 
 
 class Config:
@@ -53,9 +54,9 @@ class Variable:
     def cleargrad(self):
         self.grad = None
 
-    def backward(self, retain_grad=False):
+    def backward(self, retain_grad=False, create_graph=False):
         if self.grad is None:
-            self.grad = np.ones_like(self.data)
+            self.grad = Variable(np.ones_like(self.data))
 
         # y = creator(x)
         funcs = []
@@ -73,22 +74,31 @@ class Variable:
         while funcs:
             f = funcs.pop()
             gys = [output().grad for output in f.outputs]
-            # dx = df(x)*dy
-            gxs = f.backward(*gys)
-            if not isinstance(gxs, tuple):
-                gxs = (gxs,)
-            # do the next grad
-            for x, gx in zip(f.inputs, gxs):
-                if x.grad is None:
-                    x.grad = gx
-                else:
-                    x.grad += gx
-                if x.creator is not None:
-                    add_func(x.creator)
+            with using_config("enable_backprop", create_graph):
+                # dx = df(x)*dy
+                gxs = f.backward(*gys)
+                if not isinstance(gxs, tuple):
+                    gxs = (gxs,)
+                # do the next grad
+                for x, gx in zip(f.inputs, gxs):
+                    if x.grad is None:
+                        x.grad = gx
+                    else:
+                        x.grad += gx
+                    if x.creator is not None:
+                        add_func(x.creator)
 
-            if not retain_grad:
-                for y in f.outputs:
-                    y().grad = None
+                if not retain_grad:
+                    for y in f.outputs:
+                        y().grad = None
+
+    def reshape(self, *shape):
+        if len(shape) == 1 or isinstance(shape[0], (tuple, list)):
+            shape = shape[0]
+        return pydiablo.functions.reshape(self, shape)
+    
+    def transpose(self):
+        return pydiablo.functions.transpose(self)
 
     @property
     def shape(self):
@@ -105,6 +115,10 @@ class Variable:
     @property
     def dtype(self):
         return self.data.dtype
+    
+    @property
+    def T(self):
+        return pydiablo.functions.transpose(self)
 
     def __len__(self):
         return len(self.data)
@@ -159,7 +173,7 @@ class Mul(Function):
         return x0 * x1
 
     def backward(self, gy):
-        x0, x1 = self.inputs[0].data, self.inputs[1].data
+        x0, x1 = self.inputs
         return gy * x1, gy * x0
 
 
@@ -178,23 +192,25 @@ class Sub(Function):
     def backward(self, gy):
         return gy, -gy
 
+
 class Pow(Function):
-    def __init__(self, c) :
+    def __init__(self, c):
         self.c = c
 
     def forward(self, x):
-        return x ** self.c
-    
+        return x**self.c
+
     def backward(self, gy):
-        x = self.inputs[0].data
+        (x,) = self.inputs
         return self.c * x ** (self.c - 1) * gy
+
 
 class Div(Function):
     def forward(self, x0, x1):
         return x0 / x1
 
     def backward(self, gy):
-        x0, x1 = self.inputs[0].data, self.inputs[1].data
+        x0, x1 = self.inputs
         return gy / x0, gy * (-x0 / x1**2)
 
 
@@ -231,8 +247,10 @@ def rdiv(x0, x1):
     x1 = as_array(x1)
     return Div()(x1, x0)
 
+
 def pow(x, c):
     return Pow(c)(x)
+
 
 def setup_variable():
     Variable.__mul__ = mul
