@@ -1,7 +1,6 @@
 import numpy as np
 import weakref
 import contextlib
-from pydiablo.utils import as_array
 
 
 class Config:
@@ -20,6 +19,17 @@ def using_config(name, value):
 
 def no_grad():
     return using_config("enable_backprop", False)
+
+
+def as_variable(obj):
+    if isinstance(obj, Variable):
+        return obj
+    return Variable(obj)
+
+def as_array(x):
+    if np.isscalar(x):
+        return np.array(x)
+    return x
 
 
 class Variable:
@@ -108,6 +118,8 @@ class Variable:
 
 class Function:
     def __call__(self, *inputs) -> Variable:
+        inputs = [as_variable(input) for input in inputs]
+
         xs = [x.data for x in inputs]
         ys = self.forward(*xs)
         if not isinstance(ys, tuple):
@@ -149,12 +161,16 @@ class Mul(Function):
 
 
 def add(x0, x1):
+    x1 = as_array(x1)
     return Add()(x0, x1)
 
 
 def mul(x0, x1):
+    x1 = as_array(x1)
     return Mul()(x0, x1)
 
 
 Variable.__mul__ = mul
 Variable.__add__ = add
+Variable.__rmul__ = mul
+Variable.__radd__ = add
