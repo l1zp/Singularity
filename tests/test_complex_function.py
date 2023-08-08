@@ -2,6 +2,7 @@ import numpy as np
 import unittest
 
 from pydiablo import Variable
+from pydiablo.utils import plot_dot_graph
 
 
 class SphereTest(unittest.TestCase):
@@ -56,7 +57,9 @@ class GPTest(unittest.TestCase):
     def __init__(self, methodName: str = "runTest") -> None:
         super().__init__(methodName)
         self.x = Variable(np.array(1.0))
+        self.x.name = "x"
         self.y = Variable(np.array(1.0))
+        self.y.name = "y"
 
     def goldstein(self, x, y):
         z = (
@@ -82,3 +85,11 @@ class GPTest(unittest.TestCase):
         expected_y = np.array(8064.0)
         self.assertEqual(self.x.grad, expected_x)
         self.assertEqual(self.y.grad, expected_y)
+
+    def test_graph_plot(self):
+        z = self.goldstein(self.x, self.y)
+        z.name = "z"
+        z.backward()
+        plot_dot_graph(z, verbose=False)
+        
+
