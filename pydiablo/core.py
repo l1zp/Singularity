@@ -234,14 +234,14 @@ def rdiv(x0, x1):
 def pow(x, c):
     return Pow(c)(x)
 
-
-Variable.__mul__ = mul
-Variable.__add__ = add
-Variable.__rmul__ = mul
-Variable.__radd__ = add
-Variable.__neg__ = neg
-Variable.__sub__ = sub
-Variable.__rsub__ = rsub
-Variable.__truediv__ = div
-Variable.__rtruediv__ = rdiv
-Variable.__pow__ = pow
+def setup_variable():
+    Variable.__mul__ = mul
+    Variable.__add__ = add
+    Variable.__rmul__ = mul
+    Variable.__radd__ = add
+    Variable.__neg__ = neg
+    Variable.__sub__ = sub
+    Variable.__rsub__ = rsub
+    Variable.__truediv__ = div
+    Variable.__rtruediv__ = rdiv
+    Variable.__pow__ = pow

@@ -1,7 +1,7 @@
 import numpy as np
 import unittest
 
-from pydiablo.core import Variable, no_grad
+from pydiablo import Variable, no_grad
 from pydiablo.functions import square
 
 
