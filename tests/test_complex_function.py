@@ -51,6 +51,7 @@ class MatyasTest(unittest.TestCase):
         self.assertEqual(self.x.grad, expected_x)
         self.assertEqual(self.y.grad, expected_y)
 
+
 class GPTest(unittest.TestCase):
     def __init__(self, methodName: str = "runTest") -> None:
         super().__init__(methodName)
@@ -58,18 +59,26 @@ class GPTest(unittest.TestCase):
         self.y = Variable(np.array(1.0))
 
     def goldstein(self, x, y):
-        z = (1 + (x + y + 1)**2 * (19 - 14*x + 3*x**2 - 14*y))
+        z = (
+            1
+            + (x + y + 1) ** 2
+            * (19 - 14 * x + 3 * x**2 - 14 * y + 6 * x * y + 3 * y**2)
+        ) * (
+            30
+            + (2 * x - 3 * y) ** 2
+            * (18 - 32 * x + 12 * x**2 + 48 * y - 36 * x * y + 27 * y**2)
+        )
         return z
 
     def test_forward(self):
-        z = self.matyas(self.x, self.y)
-        expected = np.array(0.040000000000000036)
+        z = self.goldstein(self.x, self.y)
+        expected = np.array(1876.0)
         self.assertEqual(z.data, expected)
 
     def test_backward(self):
-        z = self.matyas(self.x, self.y)
+        z = self.goldstein(self.x, self.y)
         z.backward()
-        expected_x = np.array(0.040000000000000036)
-        expected_y = np.array(0.040000000000000036)
+        expected_x = np.array(-5376.0)
+        expected_y = np.array(8064.0)
         self.assertEqual(self.x.grad, expected_x)
         self.assertEqual(self.y.grad, expected_y)
