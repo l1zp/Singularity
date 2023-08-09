@@ -17,4 +17,4 @@ class SinTest(unittest.TestCase):
         y = sin(x)
         y.backward()
         expected = 1 / np.sqrt(2.)
-        self.assertAlmostEqual(x.grad, expected)
+        self.assertAlmostEqual(x.grad.data, expected)

@@ -12,4 +12,4 @@ class AddTest(unittest.TestCase):
         y = t + x0
         y.backward()
         self.assertEqual(y.grad, None)
-        self.assertEqual(x0.grad, np.array(2.0))
+        self.assertEqual(x0.grad.data, np.array(2.0))

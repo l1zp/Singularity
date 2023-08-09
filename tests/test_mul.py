@@ -21,5 +21,5 @@ class AddTest(unittest.TestCase):
         y.backward()
         expected_a = np.array(2.0)
         expected_b = np.array(3.0)
-        self.assertEqual(a.grad, expected_a)
-        self.assertEqual(b.grad, expected_b)
+        self.assertEqual(a.grad.data, expected_a)
+        self.assertEqual(b.grad.data, expected_b)

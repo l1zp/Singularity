@@ -28,7 +28,7 @@ class SquareTest(unittest.TestCase):
         y = square(x)
         y.backward()
         expected = np.array(6)
-        self.assertEqual(x.grad, expected)
+        self.assertEqual(x.grad.data, expected)
 
     def test_gradient_check(self):
         x = Variable(np.random.rand(1))
@@ -37,5 +37,5 @@ class SquareTest(unittest.TestCase):
         num_grad = numerical_diff(square, x)
         # absolute(`a` - `b`) <= (`atol` + `rtol` * absolute(`b`))
         # TODO: check ref 5
-        flg = np.allclose(x.grad, num_grad)
+        flg = np.allclose(x.grad.data, num_grad)
         self.assertTrue(flg)
