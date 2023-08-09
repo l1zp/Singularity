@@ -19,4 +19,4 @@ class AddTest(unittest.TestCase):
         y = square(a) + square(a)
         y.backward()
         expected = np.array(64.0)
-        self.assertEqual(x.grad, expected)
+        self.assertEqual(x.grad.data, expected)
