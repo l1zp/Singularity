@@ -1,6 +1,6 @@
 import numpy as np
 
-from pydiablo.core import Function
+from pydiablo.core import Function, as_variable
 
 
 class Square(Function):
@@ -46,7 +46,8 @@ class Tanh(Function):
     def backward(self, gy):
         y = self.outputs[0]()
         return gy * (1 - y**2)
-    
+
+
 class Reshape(Function):
     def __init__(self, shape):
         self.shape = shape
@@ -55,10 +56,17 @@ class Reshape(Function):
         self.x_shape = x.shape
         y = x.reshape(self.shape)
         return y
-    
-    def backward(self, gy):
-        return s
 
+    def backward(self, gy):
+        return reshape(gy, self.x_shape)
+
+
+class Transpose(Function):
+    def forward(self, x):
+        return np.transpose(x)
+
+    def backward(self, gy):
+        return transpose(gy)
 
 
 def square(x):
@@ -76,5 +84,16 @@ def sin(x):
 def cos(x):
     return Cos()(x)
 
+
 def tanh(x):
     return Tanh()(x)
+
+
+def reshape(x, shape):
+    if x.shape == shape:
+        return as_variable(x)
+    return Reshape(shape)(x)
+
+
+def transpose(x):
+    return Transpose()(x)
