@@ -46,6 +46,19 @@ class Tanh(Function):
     def backward(self, gy):
         y = self.outputs[0]()
         return gy * (1 - y**2)
+    
+class Reshape(Function):
+    def __init__(self, shape):
+        self.shape = shape
+
+    def forward(self, x):
+        self.x_shape = x.shape
+        y = x.reshape(self.shape)
+        return y
+    
+    def backward(self, gy):
+        return s
+
 
 
 def square(x):
