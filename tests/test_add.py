@@ -20,3 +20,13 @@ class AddTest(unittest.TestCase):
         z.backward()
         expected = np.array(4.0)
         self.assertEqual(x.grad.data, expected)
+
+    def test_broadcast(self):
+        x = Variable(np.array([1, 2, 3]))
+        y = Variable(np.array([10]))
+        z = x + y
+        expected = np.array([11, 12, 13])
+        self.assertTrue(np.array_equal(z.data, expected))
+
+        z.backward()
+        self.assertTrue(np.array_equal(y.grad.data, np.array([3])))

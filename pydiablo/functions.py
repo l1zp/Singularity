@@ -1,5 +1,6 @@
 import numpy as np
 
+from pydiablo import utils
 from pydiablo.core import Function, as_variable
 
 
@@ -69,6 +70,32 @@ class Transpose(Function):
         return transpose(gy)
 
 
+class BroadcastTo(Function):
+    def __init__(self, shape):
+        self.shape = shape
+
+    def forward(self, x):
+        self.x_shape = x.shape
+        return np.broadcast_to(x, self.shape)
+
+    def backward(self, gy):
+        return sum_to(gy, self.x_shape)
+
+
+class SumTo(Function):
+    def __init__(self, shape):
+        self.shape = shape
+
+    def forward(self, x):
+        self.x_shape = x.shape
+        y = utils.sum_to(x, self.shape)
+        return y
+
+    def backward(self, gy):
+        gx = broadcast_to(gy, self.x_shape)
+        return gx
+
+
 def square(x):
     return Square()(x)
 
@@ -97,3 +124,15 @@ def reshape(x, shape):
 
 def transpose(x):
     return Transpose()(x)
+
+
+def broadcast_to(x, shape):
+    if x.shape == shape:
+        return as_variable(x)
+    return BroadcastTo(shape)(x)
+
+
+def sum_to(x, shape):
+    if x.shape == shape:
+        return as_variable(x)
+    return SumTo(shape)(x)
