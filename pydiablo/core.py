@@ -96,7 +96,7 @@ class Variable:
         if len(shape) == 1 or isinstance(shape[0], (tuple, list)):
             shape = shape[0]
         return pydiablo.functions.reshape(self, shape)
-    
+
     def transpose(self):
         return pydiablo.functions.transpose(self)
 
@@ -115,7 +115,7 @@ class Variable:
     @property
     def dtype(self):
         return self.data.dtype
-    
+
     @property
     def T(self):
         return pydiablo.functions.transpose(self)
@@ -131,6 +131,10 @@ class Variable:
 
     def __mul__(self, other):
         return mul(self, other)
+
+
+class Parameter(Variable):
+    pass
 
 
 class Function:
