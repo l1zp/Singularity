@@ -7,4 +7,8 @@ from pydiablo.core import as_array
 from pydiablo.core import as_variable
 from pydiablo.core import setup_variable
 
+from pydiablo.layers import Layer
+
+from pydiablo.models import Model
+
 setup_variable()
