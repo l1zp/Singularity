@@ -2,6 +2,7 @@ import numpy as np
 import weakref
 import contextlib
 import pydiablo
+import pydiablo.functions as F
 
 
 class Config:
@@ -272,3 +273,4 @@ def setup_variable():
     Variable.__truediv__ = div
     Variable.__rtruediv__ = rdiv
     Variable.__pow__ = pow
+    Variable.__getitem__ = F.get_item
